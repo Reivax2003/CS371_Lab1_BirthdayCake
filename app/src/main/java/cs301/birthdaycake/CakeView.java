@@ -16,6 +16,7 @@ public class CakeView extends SurfaceView {
     Paint outerFlamePaint = new Paint();
     Paint innerFlamePaint = new Paint();
     Paint wickPaint = new Paint();
+    private CakeModel cakeModel;
 
     /* These constants define the dimensions of the cake.  While defining constants for things
         like this is good practice, we could be calculating these better by detecting
@@ -43,6 +44,8 @@ public class CakeView extends SurfaceView {
     public CakeView(Context context, AttributeSet attrs) {
         super(context, attrs);
 
+        this.cakeModel = new CakeModel();
+
         //This is essential or your onDraw method won't get called
         setWillNotDraw(false);
 
@@ -64,27 +67,33 @@ public class CakeView extends SurfaceView {
 
     }
 
+    public CakeModel getCakeModel() {
+        return cakeModel;
+    }
+
     /**
      * draws a candle at a specified position.  Important:  the left, bottom coordinates specify
      * the position of the bottom left corner of the candle
      */
     public void drawCandle(Canvas canvas, float left, float bottom) {
-        canvas.drawRect(left, bottom - candleHeight, left + candleWidth, bottom, candlePaint);
+        if (cakeModel.getCandles()) {
+            canvas.drawRect(left, bottom - candleHeight, left + candleWidth, bottom, candlePaint);
 
-        //draw the outer flame
-        float flameCenterX = left + candleWidth/2;
-        float flameCenterY = bottom - wickHeight - candleHeight - outerFlameRadius/3;
-        canvas.drawCircle(flameCenterX, flameCenterY, outerFlameRadius, outerFlamePaint);
+            if (cakeModel.getCandlesLit()) {
+                //draw the outer flame
+                float flameCenterX = left + candleWidth / 2;
+                float flameCenterY = bottom - wickHeight - candleHeight - outerFlameRadius / 3;
+                canvas.drawCircle(flameCenterX, flameCenterY, outerFlameRadius, outerFlamePaint);
 
-        //draw the inner flame
-        flameCenterY += outerFlameRadius/3;
-        canvas.drawCircle(flameCenterX, flameCenterY, innerFlameRadius, innerFlamePaint);
-
-        //draw the wick
-        float wickLeft = left + candleWidth/2 - wickWidth/2;
-        float wickTop = bottom - wickHeight - candleHeight;
-        canvas.drawRect(wickLeft, wickTop, wickLeft + wickWidth, wickTop + wickHeight, wickPaint);
-
+                //draw the inner flame
+                flameCenterY += outerFlameRadius / 3;
+                canvas.drawCircle(flameCenterX, flameCenterY, innerFlameRadius, innerFlamePaint);
+            }
+            //draw the wick
+            float wickLeft = left + candleWidth / 2 - wickWidth / 2;
+            float wickTop = bottom - wickHeight - candleHeight;
+            canvas.drawRect(wickLeft, wickTop, wickLeft + wickWidth, wickTop + wickHeight, wickPaint);
+        }
     }
 
     /**
@@ -101,27 +110,34 @@ public class CakeView extends SurfaceView {
         float top = cakeTop;
         float bottom = cakeTop + frostHeight;
 
-        //Frosting on top
-        canvas.drawRect(cakeLeft, top, cakeLeft + cakeWidth, bottom, frostingPaint);
-        top += frostHeight;
-        bottom += layerHeight;
+        if (cakeModel.hasFrosting()) {
+            //Frosting on top
+            canvas.drawRect(cakeLeft, top, cakeLeft + cakeWidth, bottom, frostingPaint);
+            top += frostHeight;
+            bottom += layerHeight;
 
-        //Then a cake layer
-        canvas.drawRect(cakeLeft, top, cakeLeft + cakeWidth, bottom, cakePaint);
-        top += layerHeight;
-        bottom += frostHeight;
+            //Then a cake layer
+            canvas.drawRect(cakeLeft, top, cakeLeft + cakeWidth, bottom, cakePaint);
+            top += layerHeight;
+            bottom += frostHeight;
 
-        //Then a second frosting layer
-        canvas.drawRect(cakeLeft, top, cakeLeft + cakeWidth, bottom, frostingPaint);
-        top += frostHeight;
-        bottom += layerHeight;
+            //Then a second frosting layer
+            canvas.drawRect(cakeLeft, top, cakeLeft + cakeWidth, bottom, frostingPaint);
+            top += frostHeight;
+            bottom += layerHeight;
 
-        //Then a second cake layer
-        canvas.drawRect(cakeLeft, top, cakeLeft + cakeWidth, bottom, cakePaint);
+            //Then a second cake layer
+            canvas.drawRect(cakeLeft, top, cakeLeft + cakeWidth, bottom, cakePaint);
+        } else {
+            //just a blank cake
+            canvas.drawRect(cakeLeft, top, cakeLeft + cakeWidth, bottom+2*layerHeight+frostHeight, cakePaint);
+        }
 
         //Now two equidistant candles
-        drawCandle(canvas, cakeLeft + cakeWidth*2/3 - candleWidth/2, cakeTop);
-        drawCandle(canvas, cakeLeft + cakeWidth/3 - candleWidth/2, cakeTop);
+        int candleNum = cakeModel.getCandleNum();
+        for (int i = 1; i <= candleNum; i++) {
+            drawCandle(canvas, cakeLeft + cakeWidth*i/(candleNum+1) - candleWidth/2, cakeTop);
+        }
 
     }//onDraw
 
